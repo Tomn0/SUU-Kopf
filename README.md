@@ -1,7 +1,8 @@
 # SUU-Kopf
 
-## Documentation 
-Link: https://docs.google.com/document/d/1SCPIphExCSgPyzVSVte-SpKaohGpQ60DTffhRnEePMg/edit?usp=sharing
+## useful links 
+- Documentation: https://docs.google.com/document/d/1SCPIphExCSgPyzVSVte-SpKaohGpQ60DTffhRnEePMg/edit?usp=sharing
+- DockerHub: https://hub.docker.com/repositories/suukopfproject
 
 ## Project Structure
 - /deployment - yaml files for kubernetes deployments
