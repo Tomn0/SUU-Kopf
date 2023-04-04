@@ -18,7 +18,7 @@ Link: https://docs.google.com/document/d/1SCPIphExCSgPyzVSVte-SpKaohGpQ60DTffhRn
 
 This project can be run in three ways described below:
 - Locally with minikube
-- Locally with minikbe for development purposes
+- Locally with minikube for development purposes
 - In the cloud on Azure
 
 ## Running locally with minikube
@@ -53,9 +53,9 @@ After doing changes to python files:
     - Linux/MacOS: `eval $(minikube docker-env)`
 
 3. In the same shell build the changed images (takes a while for the first time): 
-    1. Operator: `docker build --tag suukopfproject/rsacracker .\operator\`
-    2. Master: `docker build --tag suukopfproject/master .\master\`
-    3. Worker: `docker build --tag suukopfproject/worker .\worker\`
+    - Operator: `docker build --tag suukopfproject/rsacracker .\operator\`
+    - Master: `docker build --tag suukopfproject/master .\master\`
+    - Worker: `docker build --tag suukopfproject/worker .\worker\`
 4. Apply the operator: `kubectl apply -f .\deployments\operator\`
 4. Apply the custom resource definition: `kubectl apply -f .\deployments\crd\`
 5. Apply the example deployment: `kubectl apply -f .\deployments\example`
