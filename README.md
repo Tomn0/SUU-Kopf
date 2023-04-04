@@ -1,10 +1,10 @@
 # SUU-Kopf
 
-## useful links 
+## Useful links 
 - Documentation: https://docs.google.com/document/d/1SCPIphExCSgPyzVSVte-SpKaohGpQ60DTffhRnEePMg/edit?usp=sharing
 - DockerHub: https://hub.docker.com/repositories/suukopfproject
 
-## Project Structure
+## Project structure
 - /deployment - yaml files for kubernetes deployments
   - /operator - yaml files for deploying the operator
   - /crd - yaml files for deploying the custom resource definition
