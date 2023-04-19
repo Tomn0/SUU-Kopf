@@ -1,0 +1,12 @@
+# [REMOVE] This is just an example, we can change it or remove it
+# This namespace is unused for now, I just added this template to not forget about namespacing later =P
+
+---
+# Namespace for all rsa cracker resources
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rsacracker
+  labels:
+    name: rsacracker
+---

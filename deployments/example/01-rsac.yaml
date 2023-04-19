@@ -1,0 +1,6 @@
+---
+# An instance of our custom resource
+apiVersion: suu-kopf.dev/v1
+kind: RSACraker
+metadata:
+  name: my-rsac
