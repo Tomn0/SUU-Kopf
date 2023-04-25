@@ -3,6 +3,8 @@
 
 import kopf
 import logging
+import asyncio
+from requests import Session
 
 @kopf.on.create('rsac')
 def create_fn(status, **kwargs):
@@ -11,12 +13,19 @@ def create_fn(status, **kwargs):
 @kopf.on.create("pod", labels={ 'mylabel': 'temp-worker' })
 def create_temp_worker(status, **kwargs):
     logging.info(f"TEMP worker created")
+    return 8888
 
-'''
-TODO:
-[] napisać yaml z workera
-[] odpalić yamle z workerami jako 3 osobne deploymenty
-[] operator on_create wykrywa powstanie workerów
-[] dobić się do workerów
-[] 
-'''
+
+@kopf.on.delete("pod", labels={ 'mylabel': 'temp-worker' })
+async def handle_delete(status, **kwargs):
+    # logging.info(f"This is the STATUS: {status}")
+    # pod_ip = status['podIP']
+    # logging.info(pod_ip)
+
+    # session = Session()
+    # result = await asyncio.get_event_loop().run_in_executor(None, session.get, f'http://{pod_ip}/counter')
+    # logging.info(f"Call to restore returned with state=`{result.text}`")
+    f = open('/usr/share/pvc/state.dat', 'r')
+    logging.info(f.readlines())
+    f.close()
+

@@ -17,10 +17,23 @@ spec:
         mylabel: temp-worker
         application: temp-worker1
     spec:
+      volumes:
+      - name: tmp-pv-storage
+        persistentVolumeClaim:
+          claimName: persistent-volume-claim
       containers:
       - name: temp-worker1
         imagePullPolicy: Never # Uncomment this line when developing locally
         image: suukopfproject/worker
+        lifecycle:
+          preStop:
+            httpGet:
+              port: 80
+              path: save
+        volumeMounts:
+          - mountPath: "/usr/share/pvc"
+            name: tmp-pv-storage
+
 
 ---
 apiVersion: apps/v1
@@ -40,10 +53,23 @@ spec:
         mylabel: temp-worker
         application: temp-worker2
     spec:
+      volumes:
+      - name: tmp-pv-storage
+        persistentVolumeClaim:
+          claimName: persistent-volume-claim
       containers:
       - name: temp-worker2
         imagePullPolicy: Never # Uncomment this line when developing locally
         image: suukopfproject/worker
+        lifecycle:
+          preStop:
+            httpGet:
+              port: 80
+              path: save
+        volumeMounts:
+          - mountPath: "/usr/share/pvc"
+            name: tmp-pv-storage
+
 
 ---
 apiVersion: apps/v1
@@ -63,7 +89,19 @@ spec:
         mylabel: temp-worker
         application: temp-worker3
     spec:
+      volumes:
+      - name: tmp-pv-storage
+        persistentVolumeClaim:
+          claimName: persistent-volume-claim
       containers:
       - name: temp-worker3
         imagePullPolicy: Never # Uncomment this line when developing locally
         image: suukopfproject/worker
+        lifecycle:
+          preStop:
+            httpGet:
+              port: 80
+              path: save
+        volumeMounts:
+          - mountPath: "/usr/share/pvc"
+            name: tmp-pv-storage

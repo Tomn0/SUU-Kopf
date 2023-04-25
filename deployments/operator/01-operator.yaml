@@ -17,7 +17,14 @@ spec:
         application: rsac-operator
     spec:
       serviceAccountName: kopfexample-account
+      volumes:
+      - name: tmp-pv-storage
+        persistentVolumeClaim:
+          claimName: persistent-volume-claim
       containers:
       - name: rsac-operator
         imagePullPolicy: Never # Uncomment this line when developing locally
         image: suukopfproject/rsacracker
+        volumeMounts:
+          - mountPath: "/usr/share/pvc"
+            name: tmp-pv-storage
