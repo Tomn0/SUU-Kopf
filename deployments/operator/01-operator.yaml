@@ -19,5 +19,5 @@ spec:
       serviceAccountName: kopfexample-account
       containers:
       - name: rsac-operator
-        # imagePullPolicy: Never # Uncomment this line when developing locally
+        imagePullPolicy: Never # Uncomment this line when developing locally
         image: suukopfproject/rsacracker

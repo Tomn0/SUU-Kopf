@@ -1,0 +1,69 @@
+# Deploys the workers's Docker image
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-temp-deployment1
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      application: temp-worker1
+  template:
+    metadata:
+      labels:
+        mylabel: temp-worker
+        application: temp-worker1
+    spec:
+      containers:
+      - name: temp-worker1
+        imagePullPolicy: Never # Uncomment this line when developing locally
+        image: suukopfproject/worker
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-temp-deployment2
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      application: temp-worker2
+  template:
+    metadata:
+      labels:
+        mylabel: temp-worker
+        application: temp-worker2
+    spec:
+      containers:
+      - name: temp-worker2
+        imagePullPolicy: Never # Uncomment this line when developing locally
+        image: suukopfproject/worker
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-temp-deployment3
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      application: temp-worker3
+  template:
+    metadata:
+      labels:
+        mylabel: temp-worker
+        application: temp-worker3
+    spec:
+      containers:
+      - name: temp-worker3
+        imagePullPolicy: Never # Uncomment this line when developing locally
+        image: suukopfproject/worker
