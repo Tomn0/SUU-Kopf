@@ -4,28 +4,40 @@
 import kopf
 import logging
 import asyncio
+from state import State
 from requests import Session
+import kubernetes
 
-@kopf.on.create('rsac')
+
+state_registry = {}
+
+@kopf.on.create('rsac', retries=1)
 def create_fn(status, **kwargs):
     logging.info(f"A create handler is called")
 
-@kopf.on.create("pod", labels={ 'mylabel': 'temp-worker' })
-def create_temp_worker(status, **kwargs):
-    logging.info(f"TEMP worker created")
-    return 8888
+@kopf.on.create("pod", labels={ 'application': 'rsac-worker' }, retries=1)
+def pod_on_create(meta: kopf.Meta, **kwargs):
+    global state_registry
 
+    id = meta.labels.get('rsac-id')
 
-@kopf.on.delete("pod", labels={ 'mylabel': 'temp-worker' })
-async def handle_delete(status, **kwargs):
-    # logging.info(f"This is the STATUS: {status}")
-    # pod_ip = status['podIP']
-    # logging.info(pod_ip)
+    if state_registry.get(id, None) is not None:
+        logging.info(f'This pod has state which needs to be restored: {state_registry[id]}')
 
-    # session = Session()
-    # result = await asyncio.get_event_loop().run_in_executor(None, session.get, f'http://{pod_ip}/counter')
-    # logging.info(f"Call to restore returned with state=`{result.text}`")
-    f = open('/usr/share/pvc/state.dat', 'r')
-    logging.info(f.readlines())
+    state_registry[id] = State(0)
+
+    api = kubernetes.client.CoreV1Api()
+    api.delete_namespaced_pod(meta.name, meta.namespace)
+
+@kopf.on.delete("pod",labels={ 'application': 'rsac-worker' }, retries=1)
+def pod_on_delete(meta: kopf.Meta, **kwargs):
+    global state_registry
+
+    id = meta.labels.get('rsac-id')
+
+    f = open(f'/usr/share/pvc/{id}.dat', 'r') # TODO handle file not found
+    somenumber = int(f.readlines()[0])
     f.close()
+
+    state_registry[id] = State(somenumber)
 
