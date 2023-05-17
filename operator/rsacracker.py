@@ -5,7 +5,7 @@ from requests import Session
 import kubernetes
 import jsonpickle
 import os
-
+import yaml
 
 @kopf.on.create("pod", labels={ 'application': 'rsac-worker' }, retries=1)
 def pod_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
@@ -16,9 +16,10 @@ def pod_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     if compare_state(desired_state, current_state):
         logging.info(f'This pod has invalid state, is {current_state} should be: {desired_state}')
 
-        # delete the pod with invalid state
-        api = kubernetes.client.CoreV1Api()
-        api.delete_namespaced_pod(meta.name, meta.namespace)
+        # delete the pod with invalid state - FIXME: uncomment after testing!
+        # api = kubernetes.client.CoreV1Api()
+        # api.delete_namespaced_pod(meta.name, meta.namespace)
+        logging.info(f'Normally a pod is deleted here!')
     else:
         logging.info(f'A pod was created with an up-to-date state: {current_state}')
 
@@ -34,6 +35,16 @@ def pod_on_delete(meta: kopf.Meta, **kwargs):
     # create a new worker with the state of the dead worker
     # TODO
     logging.info(f'A new worker should be created here with state: {jsonpickle.encode(backup_state)}')
+
+    # creating new worker:
+    with open('rsac-worker.yaml', 'r') as f:
+        worker_manifest = yaml.safe_load(f)
+    # worker_manifest = {}    # TODO: load from file
+
+    api = kubernetes.client.CoreV1Api()
+    namespace = meta.namespace
+    api.create_namespaced_pod(namespace, worker_manifest)
+    logging.info(f'Worker pod created: in namespace: {namespace}')
 
 def get_starter_state_from_spec(spec: kopf.Spec) -> State:
     env = spec['containers'][0]['env']
