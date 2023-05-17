@@ -5,6 +5,7 @@ COPY . /app
 
 RUN pip3 install flask
 RUN pip3 install APScheduler
+RUN pip3 install jsonpickle
 
 ENV FLASK_APP=worker.py
 

@@ -2,12 +2,16 @@ import time
 from flask import Flask
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
+import random
+from state import State
+import jsonpickle
 
 # env var init and global vars
 id = os.environ.get('ID', None)
 if id is None:
     print('Id env var not found in env!')
 state = 0
+salt = random.randint(1, 9999999) # random salt to generare a unique backup file name
 
 # flask init
 app = Flask(__name__)
@@ -36,8 +40,16 @@ def debug():
 
 @app.route("/save")
 def save():
-    global id
-    f = open(f'/usr/share/pvc/{id}.dat', 'w')
-    f.write(f'{state}')
-    f.close()
+    global id, state
+
+    # create directory for this worker
+    path = f'/usr/share/pvc/{id}'
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    # save state to file
+    with open(f'{path}/{salt}.dat', 'w') as file:
+        state_string = jsonpickle.encode(State(state))
+        file.write(f'{state_string}')
+
     return 'State saved correctly'
