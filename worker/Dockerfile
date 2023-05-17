@@ -1,6 +1,14 @@
 FROM python:3.11
-ADD . /src
 
-# pip installs can be done here
+WORKDIR /app
+COPY . /app
 
-CMD python /src/worker.py --verbose
+RUN pip3 install flask
+RUN pip3 install APScheduler
+RUN pip3 install jsonpickle
+
+ENV FLASK_APP=worker.py
+
+EXPOSE 80
+
+CMD ["flask", "--app", "worker.py", "run", "--host=0.0.0.0", "--port=80"]

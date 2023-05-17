@@ -1,0 +1,31 @@
+# Deploys the workers's Docker image
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rsac-worker1
+  labels:
+    rsac-id: someid
+    mylabel: temp-worker
+    application: rsac-worker
+    tmp: avc
+spec:
+  volumes:
+  - name: tmp-pv-storage
+    persistentVolumeClaim:
+      claimName: rsac-persistent-volume-claim
+  containers:
+  - name: temp-worker1
+    imagePullPolicy: Never # Uncomment this line when developing locally
+    image: suukopfproject/worker
+    lifecycle:
+      preStop:
+        httpGet:
+          port: 80
+          path: save
+    volumeMounts:
+      - mountPath: "/usr/share/pvc"
+        name: tmp-pv-storage
+    env:
+    - name: ID
+      value: "someid"
