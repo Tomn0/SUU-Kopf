@@ -5,7 +5,7 @@ kind: Pod
 metadata:
   name: rsac-worker1
   labels:
-    rsac-id: someid
+    rsac-id: "1"
     mylabel: temp-worker
     application: rsac-worker
     tmp: avc
@@ -28,4 +28,4 @@ spec:
         name: tmp-pv-storage
     env:
     - name: ID
-      value: "someid"
+      value: "1"

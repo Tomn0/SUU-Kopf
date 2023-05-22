@@ -3,9 +3,9 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: rsac-worker123
+  name: {rsac_worker_name}
   labels:
-    rsac-id: someid
+    rsac-id: {id}
     mylabel: temp-worker
     application: rsac-worker
     tmp: avc
@@ -28,4 +28,6 @@ spec:
         name: tmp-pv-storage
     env:
     - name: ID
-      value: "someid"
+      value: {id}
+    - name: STATE
+      value: {state}

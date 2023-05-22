@@ -10,7 +10,13 @@ import jsonpickle
 id = os.environ.get('ID', None)
 if id is None:
     print('Id env var not found in env!')
-state = 0
+
+state = os.environ.get('STATE', None)
+if state is None:
+    state = 0
+else:
+    state = jsonpickle.decode(state).somenumber
+
 salt = random.randint(1, 9999999) # random salt to generare a unique backup file name
 
 # flask init

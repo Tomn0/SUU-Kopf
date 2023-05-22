@@ -6,6 +6,7 @@ import kubernetes
 import jsonpickle
 import os
 import yaml
+import jinja2
 
 @kopf.on.create("pod", labels={ 'application': 'rsac-worker' }, retries=1)
 def pod_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
@@ -33,13 +34,18 @@ def pod_on_delete(meta: kopf.Meta, **kwargs):
     logging.info(f"A pod with id '{id}' is being deleted, the most up-to-date state for this pod is: {backup_state}")
 
     # create a new worker with the state of the dead worker
-    # TODO
-    logging.info(f'A new worker should be created here with state: {jsonpickle.encode(backup_state)}')
+    logging.info(f'A new worker is created here with state: {jsonpickle.encode(backup_state)}')
 
-    # creating new worker:
+    # Load the YAML template file
     with open('rsac-worker.yaml', 'r') as f:
         worker_manifest = yaml.safe_load(f)
-    # worker_manifest = {}    # TODO: load from file
+
+    worker_manifest['metadata']['name'] = 'rsac-worker' + str(int(id)+1)
+    worker_manifest['metadata']['labels']['rsac-id']  = str(int(id)+1)
+    worker_manifest['spec']['containers'][0]['env'][0]['value'] = str(int(id)+1)
+    worker_manifest['spec']['containers'][0]['env'][1]['value'] = str(jsonpickle.encode(backup_state))
+
+    logging.info(f'Deploying pod with manifest: {worker_manifest}')
 
     api = kubernetes.client.CoreV1Api()
     namespace = meta.namespace
