@@ -27,7 +27,7 @@ def bg_task():
     global state
     while True:
         state += 1
-        time.sleep(5) # yeah, we should avoid this, TODO
+        time.sleep(5)
 
 scheduler = BackgroundScheduler(daemon=True)
 scheduler.add_job(bg_task)
