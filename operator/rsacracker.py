@@ -1,10 +1,11 @@
 import kopf
 import logging
-from state import State, create_initial_state, compare_state
+from state import State, create_initial_state, is_gte
 import kubernetes
 import jsonpickle
 import os
 import yaml
+import random
 
 @kopf.on.create("pod", labels={ 'application': 'rsac-worker' }, retries=1)
 def pod_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
@@ -12,15 +13,14 @@ def pod_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     current_state = get_starter_state_from_spec(spec)
     desired_state = get_best_backup_state_for_id(id)
 
-    if compare_state(desired_state, current_state):
-        logging.info(f'This pod has invalid state, is {current_state} should be: {desired_state}')
-
-        # delete the pod with invalid state - FIXME: uncomment after testing!
-        # api = kubernetes.client.CoreV1Api()
-        # api.delete_namespaced_pod(meta.name, meta.namespace)
-        logging.info(f'Normally a pod is deleted here!')
-    else:
+    if is_gte(current_state, desired_state):
         logging.info(f'A pod was created with an up-to-date state: {current_state}')
+    else:
+        logging.info(f'This pod has invalid state, is {current_state} should be: {desired_state}. It will be deleted!')
+
+        api = kubernetes.client.CoreV1Api()
+        api.delete_namespaced_pod(meta.name, meta.namespace)
+        
 
 
 @kopf.on.delete("pod",labels={ 'application': 'rsac-worker' }, retries=1)
@@ -38,9 +38,9 @@ def pod_on_delete(meta: kopf.Meta, **kwargs):
     with open('rsac-worker.yaml', 'r') as f:
         worker_manifest = yaml.safe_load(f)
 
-    worker_manifest['metadata']['name'] = 'rsac-worker' + str(int(id)+1)
-    worker_manifest['metadata']['labels']['rsac-id']  = str(int(id)+1)
-    worker_manifest['spec']['containers'][0]['env'][0]['value'] = str(int(id)+1)
+    worker_manifest['metadata']['name'] = 'rsac-worker-' + str(id) + '-' + str(random.randint(10000, 99999))
+    worker_manifest['metadata']['labels']['rsac-id']  = str(id)
+    worker_manifest['spec']['containers'][0]['env'][0]['value'] = str(id)
     worker_manifest['spec']['containers'][0]['env'][1]['value'] = str(jsonpickle.encode(backup_state))
 
     logging.info(f'Deploying pod with manifest: {worker_manifest}')
@@ -69,7 +69,7 @@ def get_best_backup_state_for_id(id) -> State:
             with open(os.path.join(path, file_name)) as backup_file:
                 state = jsonpickle.decode(backup_file.read())
                 logging.info(f'Operator considering file: {file_name} which holds state {state}')
-                if compare_state(longest_running_state, state):
+                if is_gte(longest_running_state, state):
                     # longest_running_state is bigger then the state in the file, discard the file
                     os.remove(os.path.join(path, file_name))
                 else:

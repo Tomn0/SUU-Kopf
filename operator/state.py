@@ -21,5 +21,6 @@ def create_initial_state():
     return State(0)
 
 # returns the state with the most work done
-def compare_state(state1: State, state2: State):
-    return True if state1.somenumber >= state2.somenumber else False
+def is_gte(state1: State, state2: State):
+    print(f'{state1.somenumber} >= {state2.somenumber} ?')
+    return state1.somenumber >= state2.somenumber
