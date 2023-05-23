@@ -1,12 +1,10 @@
 import kopf
 import logging
 from state import State, create_initial_state, compare_state
-from requests import Session
 import kubernetes
 import jsonpickle
 import os
 import yaml
-import jinja2
 
 @kopf.on.create("pod", labels={ 'application': 'rsac-worker' }, retries=1)
 def pod_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
