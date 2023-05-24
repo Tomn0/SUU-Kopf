@@ -30,4 +30,19 @@ spec:
         volumeMounts:
           - name: main-storage
             mountPath: "/usr/share/pvc"
-            
+
+---
+
+# Service for operator to be achievable from master
+apiVersion: v1
+kind: Service
+metadata:
+  name: operator-service
+spec:
+  type: LoadBalancer
+  selector:
+    application: rsac-operator
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

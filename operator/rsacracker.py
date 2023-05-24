@@ -23,7 +23,6 @@ def pod_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
 
         api = kubernetes.client.CoreV1Api()
         api.delete_namespaced_pod(meta.name, meta.namespace)
-        
 
 
 @kopf.on.delete("pod",labels={ 'application': 'rsac-worker' }, retries=1)
@@ -98,5 +97,6 @@ def start_task():
     
     return jsonify({'task_id': task_id}), 202
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     logging.debug("Running flask...")
+#     app.run(debug=True, port=8080)

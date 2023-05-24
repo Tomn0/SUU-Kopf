@@ -5,7 +5,7 @@ from enum import IntEnum
 
 app = Flask(__name__)
 
-operator_url = 'url'
+start_task_endpoint = 'htttp://10.103.170.51:80/start-task'
 
 class TaskStatus(IntEnum):
     CREATED = 1
@@ -26,7 +26,7 @@ def create_task():
     n = int(request.form.get('n'))
 
     # send start-task request to operator
-    response = requests.post(operator_url, json={"n" : n})
+    response = requests.post(start_task_endpoint, json={"n" : n})
 
     # return created task's id
     task_id = response.json()['task_id']
