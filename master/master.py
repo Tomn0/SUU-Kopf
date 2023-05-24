@@ -1,21 +1,18 @@
 from flask import Flask, request, jsonify
 import time
+import requests
 from enum import IntEnum
 
 app = Flask(__name__)
 
-
+operator_url = 'url'
 
 class TaskStatus(IntEnum):
     CREATED = 1
     WORKING = 2
     DONE = 3
 
-def deployTask(n):
-    taskID = str(time.time())
-    return taskID
-
-def getTask(taskID):
+def get_task(taskID):
     status = TaskStatus.CREATED
     result = None
 
@@ -27,13 +24,17 @@ def getTask(taskID):
 @app.route('/task', methods=['POST'])
 def create_task():
     n = int(request.form.get('n'))
-    task_id = deployTask(n)
-    
+
+    # send start-task request to operator
+    response = requests.post(operator_url, json={"n" : n})
+
+    # return created task's id
+    task_id = response.json()['task_id']
     return jsonify({'task_id': task_id}), 202
 
 @app.route('/task/<task_id>', methods=['GET'])
 def get_task(task_id):
-    task = getTask(task_id)
+    task = get_task(task_id)
 
     if task is None:
         return jsonify({'error': 'Task not found'}), 404

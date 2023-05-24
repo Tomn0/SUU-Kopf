@@ -4,8 +4,11 @@ from state import State, create_initial_state, is_gte
 import kubernetes
 import jsonpickle
 import os
+import time
 import yaml
 import random
+from flask import Flask, request, jsonify
+
 
 @kopf.on.create("pod", labels={ 'application': 'rsac-worker' }, retries=1)
 def pod_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
@@ -81,3 +84,19 @@ def get_best_backup_state_for_id(id) -> State:
         return longest_running_state
     else:
         return create_initial_state()
+
+# api for starting task, used by master
+app = Flask(__name__)
+
+@app.route('/start-task', methods=['POST'])
+def start_task():
+    n = int(request.form.get('n'))
+    logging.debug(f"Received start-task request with number {n}")
+
+    # TODO: start actual task (deploy workers etc.)
+    task_id = str(time.time())
+    
+    return jsonify({'task_id': task_id}), 202
+
+if __name__ == '__main__':
+    app.run(debug=True)
