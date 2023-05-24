@@ -4,6 +4,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: operator-deployment
+  labels:
+    tmp: abcew
 spec:
   replicas: 1
   strategy:
@@ -17,7 +19,15 @@ spec:
         application: rsac-operator
     spec:
       serviceAccountName: kopfexample-account
+      volumes:
+      - name: main-storage
+        persistentVolumeClaim:
+          claimName: rsac-persistent-volume-claim
       containers:
       - name: rsac-operator
-        # imagePullPolicy: Never # Uncomment this line when developing locally
+        imagePullPolicy: Never # Uncomment this line when developing locally
         image: suukopfproject/rsacracker
+        volumeMounts:
+          - name: main-storage
+            mountPath: "/usr/share/pvc"
+            
