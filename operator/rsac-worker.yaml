@@ -3,12 +3,11 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: {rsac_worker_name}
+  name: rsac-worker-{id}-{salt}
   labels:
     rsac-id: {id}
     mylabel: temp-worker
     application: rsac-worker
-    tmp: avc
 spec:
   volumes:
   - name: tmp-pv-storage
