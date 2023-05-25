@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 import time
-import requests
 from enum import IntEnum
 
 app = Flask(__name__)
