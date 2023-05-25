@@ -33,7 +33,7 @@ def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     
     # create master
     master_manifest = create_yaml('master')
-    api.create_namespaced_pod(meta.namespace, worker_manifest)
+    api.create_namespaced_pod(meta.namespace, master_manifest)
 
     # create user-master service
     user_master_service_manifest = create_yaml('user-master-service')
@@ -41,6 +41,8 @@ def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
 
 @kopf.on.delete("rsac", retries=1)
 def rsac_on_delete(meta: kopf.Meta, **kwargs):
+    api = kubernetes.client.CoreV1Api()
+    
     # delete service
     api.delete_namespaced_service('user-master-service', meta.namespace)
 
@@ -52,7 +54,6 @@ def rsac_on_delete(meta: kopf.Meta, **kwargs):
         os.remove(os.path.join(operator_directory, 'is_working'))
 
     # find pods to be deleted
-    api = kubernetes.client.CoreV1Api()
     pod_list = api.list_namespaced_pod(namespace=meta.namespace, watch=False)
     names_to_be_deleted = []
     for pod in pod_list.items:
@@ -121,7 +122,7 @@ def create_worker_yaml(id: str | int, state: State = None, salt: int = None):
         return yaml.safe_load(formatted_yaml)
 
 def create_yaml(yamlFilename: str, params: dict = {}):
-    path = os.path.join(os.path.dirname(__file__), yamlFilename '.yaml')
+    path = os.path.join(os.path.dirname(__file__), yamlFilename + '.yaml')
     tmpl = open(path, 'rt').read()
     text = tmpl.format(params)
     return yaml.safe_load(text)
