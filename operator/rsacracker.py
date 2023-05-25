@@ -54,9 +54,10 @@ operator_directory = '/usr/share/pvc/operator' # directory in PVC where the oper
 def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     worker_count = spec['workerCount']
 
+    api = kubernetes.client.CoreV1Api()
+
     # create workers
     worker_ids = [ f'id{i}' for i in range(worker_count) ]
-    api = kubernetes.client.CoreV1Api()
     for id in worker_ids:
         starting_state = create_initial_state() # in the future this should be a chunk of work for the worker
         worker_manifest = create_worker_yaml(id, starting_state)
@@ -68,9 +69,23 @@ def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     with open(os.path.join(operator_directory, 'is_working'), 'w'):
         # the contents are empty, it's just the exsitance of this file that's important to the operator
         pass
+    
+    # create master
+    master_manifest = create_yaml('master')
+    api.create_namespaced_pod(meta.namespace, worker_manifest)
+
+    # create user-master service
+    user_master_service_manifest = create_yaml('user-master-service')
+    api.create_namespaced_service(meta.namespace, user_master_service_manifest)
 
 @kopf.on.delete("rsac", retries=1)
 def rsac_on_delete(meta: kopf.Meta, **kwargs):
+    # delete service
+    api.delete_namespaced_service('user-master-service', meta.namespace)
+    
+    # delete master
+    api.delete_namespaced_pod('master', meta.namespace)
+
     # delete the is_working file, which will cause the operator to stop caring about the workers
     if os.path.exists(os.path.join(operator_directory, 'is_working')):
         os.remove(os.path.join(operator_directory, 'is_working'))
@@ -143,6 +158,12 @@ def create_worker_yaml(id: str | int, state: State = None, salt: int = None):
             state = f"'{jsonpickle.encode(state)}'"
         )
         return yaml.safe_load(formatted_yaml)
+
+def create_yaml(yamlFilename: str, params: dict = {}):
+    path = os.path.join(os.path.dirname(__file__), yamlFilename '.yaml')
+    tmpl = open(path, 'rt').read()
+    text = tmpl.format(params)
+    return yaml.safe_load(text)
 
 
 def get_starter_state_from_spec(spec: kopf.Spec) -> State:
