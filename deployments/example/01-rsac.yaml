@@ -5,4 +5,4 @@ kind: RSACraker
 metadata:
   name: my-rsac
 spec:
-  workerCount: 3 
+  workerCount: 3

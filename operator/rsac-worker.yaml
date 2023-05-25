@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: {rsac_worker_name}
+  name: rsac-worker-{id}-{salt}
   labels:
     rsac-id: {id}
     mylabel: temp-worker
