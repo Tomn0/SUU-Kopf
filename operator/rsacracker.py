@@ -6,47 +6,8 @@ import jsonpickle
 import os
 import yaml
 import random
-from resources import Service
 
-resources = []
 
-@kopf.on.create("RSACraker")
-def on_rsacracker_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
-    global resources
-
-    service1 = Service(
-        'service',
-        'rsacracker',
-        {rsac-worker, id: workerId, rsac_worker_name: workerName, state: workerState}
-    )
-    service1.create()
-
-    resources += [service1]
-    
-@kopf.on.delete("RSACraker")
-def on_rsacracker_delete(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
-    global resources
-
-    for r in resources:
-        r.delete()
-    
-    resources = []
-
-def create_n_workers(workersCount):
-    for workerId in range(workersCount):
-        workerName = 'rsac-worker-' + str(workerId)
-        workerState = 0
-
-        data = getYaml(
-            'rsac-worker',
-            {rsac-worker, id: workerId, rsac_worker_name: workerName, state: workerState}
-        )
-
-        namespace = 'rsacracker'
-        api = kubernetes.client.CoreV1Api()
-        api.create_namespaced_pod(namespace, data)
-
-        logger.info(f"worker created: {obj}")
 
 operator_directory = '/usr/share/pvc/operator' # directory in PVC where the operator keeps its files
 
@@ -82,7 +43,7 @@ def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
 def rsac_on_delete(meta: kopf.Meta, **kwargs):
     # delete service
     api.delete_namespaced_service('user-master-service', meta.namespace)
-    
+
     # delete master
     api.delete_namespaced_pod('master', meta.namespace)
 
