@@ -163,10 +163,16 @@ def get_best_backup_state_for_id(id) -> State:
     else:
         return create_initial_state()
 
+
+
 # api for starting task, used by master
+
 app = Flask(__name__)
-logging.debug("Running flask...")
-app.run(debug=True, host="0.0.0.0", port=8080)
+
+@kopf.daemon('flask_daemon')
+def run_flask(stopped, **kwargs):
+    logging.debug("Running flask...")
+    app.run(debug=True, host="0.0.0.0", port=8080)
 
 @app.route('/start-task', methods=['POST'])
 def start_task():
