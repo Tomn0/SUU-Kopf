@@ -8,7 +8,6 @@ metadata:
     rsac-id: {id}
     mylabel: temp-worker
     application: rsac-worker
-    tmp: avc
 spec:
   volumes:
   - name: tmp-pv-storage

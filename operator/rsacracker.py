@@ -7,6 +7,11 @@ import os
 import yaml
 import random
 
+
+@kopf.on.create("rsac", retries=1)
+def rsac_on_create(spec: kopf.Spec, **kwargs):
+    workerCount = spec['workerCount'] 
+
 @kopf.on.create("pod", labels={ 'application': 'rsac-worker' }, retries=1)
 def pod_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     id = meta.labels.get('rsac-id')
