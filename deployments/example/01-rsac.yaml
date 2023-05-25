@@ -4,3 +4,5 @@ apiVersion: suu-kopf.dev/v1
 kind: RSACraker
 metadata:
   name: my-rsac
+spec:
+  workers: 4
