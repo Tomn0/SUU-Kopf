@@ -27,7 +27,7 @@ def bg_task():
     global state
     
     while True:
-        if state.current_number % state.current_number == 0:
+        if state.current_number % state.N == 0:
             # found factor
             break
         

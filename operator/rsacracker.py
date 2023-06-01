@@ -30,6 +30,9 @@ def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
         first_number = i * each_state_size
         last_number = (i+1) * each_state_size - 1
 
+        if first_number < 2:
+            first_number = 2
+
         states += [State(N, first_number, last_number)]
     
     states[-1].last_number = last_number_to_check
