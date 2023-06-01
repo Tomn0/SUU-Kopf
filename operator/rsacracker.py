@@ -18,11 +18,11 @@ operator_directory = '/usr/share/pvc/operator' # directory in PVC where the oper
 @kopf.on.create("rsac", retries=1)
 def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     worker_count = spec['workerCount']
-    N = spec['N']
+    N = spec['numberToFactor']
 
     api = kubernetes.client.CoreV1Api()
 
-    last_number_to_check = int(sqrt(N))
+    last_number_to_check = int(math.sqrt(N))
     each_state_size = int(last_number_to_check / worker_count)
     states = []
 
@@ -36,7 +36,7 @@ def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
 
     # create workers
     worker_ids = [ f'id{i}' for i in range(worker_count) ]
-    for starting_state in states:
+    for id,starting_state in enumerate(states):
         worker_manifest = create_worker_yaml(id, starting_state)
         api.create_namespaced_pod(meta.namespace, worker_manifest)
 
