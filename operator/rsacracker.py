@@ -35,9 +35,9 @@ def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     states[-1].last_number = last_number_to_check
 
     # create workers
-    worker_ids = [ f'id{i}' for i in range(worker_count) ]
-    for id,starting_state in enumerate(states):
-        worker_manifest = create_worker_yaml(id, starting_state)
+    for i,starting_state in enumerate(states):
+        worker_id = f'id{i}'
+        worker_manifest = create_worker_yaml(worker_id, starting_state)
         api.create_namespaced_pod(meta.namespace, worker_manifest)
 
     # this file tells the operator that it is working, deleting it will make the operator ignore the workers
