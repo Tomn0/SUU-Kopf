@@ -3,7 +3,7 @@ from flask import Flask
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
 import random
-from state import State
+from state import State, create_initial_state
 import jsonpickle
 
 # env var init and global vars
@@ -13,9 +13,9 @@ if id is None:
 
 state = os.environ.get('STATE', None)
 if state is None:
-    state = 0
+    state = create_initial_state()
 else:
-    state = jsonpickle.decode(state).somenumber
+    state = jsonpickle.decode(state)
 
 salt = random.randint(1, 9999999) # random salt to generare a unique backup file name
 
@@ -25,9 +25,13 @@ app = Flask(__name__)
 # background task init
 def bg_task():
     global state
+    
     while True:
-        state += 1
-        time.sleep(5)
+        if state.current_number % state.current_number == 0:
+            # found factor
+            break
+        
+        state.current_number += 1
 
 scheduler = BackgroundScheduler(daemon=True)
 scheduler.add_job(bg_task)
@@ -37,7 +41,7 @@ scheduler.start()
 @app.route("/increment")
 def increment():
     global state
-    state += 1
+    state.current_number += 1
     return str(state)
 
 @app.route("/debug")
