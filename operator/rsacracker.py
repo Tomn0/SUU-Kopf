@@ -7,6 +7,7 @@ import os
 import time
 import yaml
 import random
+import math
 from flask import Flask, request, jsonify
 
 
@@ -17,13 +18,25 @@ operator_directory = '/usr/share/pvc/operator' # directory in PVC where the oper
 @kopf.on.create("rsac", retries=1)
 def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     worker_count = spec['workerCount']
+    N = spec['N']
 
     api = kubernetes.client.CoreV1Api()
 
+    last_number_to_check = int(sqrt(N))
+    each_state_size = int(last_number_to_check / worker_count)
+    states = []
+
+    for i in range(worker_count):
+        first_number = i * each_state_size
+        last_number = (i+1) * each_state_size - 1
+
+        states += [State(N, first_number, last_number)]
+    
+    states[-1].last_number = last_number_to_check
+
     # create workers
     worker_ids = [ f'id{i}' for i in range(worker_count) ]
-    for id in worker_ids:
-        starting_state = create_initial_state() # in the future this should be a chunk of work for the worker
+    for starting_state in states:
         worker_manifest = create_worker_yaml(id, starting_state)
         api.create_namespaced_pod(meta.namespace, worker_manifest)
 

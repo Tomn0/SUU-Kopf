@@ -23,7 +23,7 @@ class State: # TODO duplicating classes is evil
 
 # creates an initial state instance (with no work done)
 def create_initial_state():
-    return State(0, 100)
+    return State(143, 0, 100)
 
 # returns the state with the most work done
 def is_gte(state1: State, state2: State):
