@@ -9,6 +9,7 @@ import yaml
 import random
 import math
 from flask import Flask, request, jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 
@@ -185,17 +186,44 @@ def get_best_backup_state_for_id(id) -> State:
 
 app = Flask(__name__)
 
-@kopf.daemon('flask_daemon')
-def run_flask(stopped, **kwargs):
+def run_flask():
     logging.debug("Running flask...")
-    app.run(debug=True, host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080)
 
-@app.route('/start-task', methods=['POST'])
-def start_task():
-    n = int(request.form.get('n'))
-    logging.debug(f"Received start-task request with number {n}")
+scheduler = BackgroundScheduler(daemon=True)
+scheduler.add_job(run_flask)
+scheduler.start()
 
-    # TODO: start actual task (deploy workers etc.)
-    task_id = str(time.time())
+@app.route('/progress', methods=['GET'])
+def progress():
+    logging.debug(f"Received progress request")
     
-    return jsonify({'task_id': task_id}), 202
+    states = []
+    progress_done = 0
+    progress_all = 0
+    solution = None
+
+    path = f'/usr/share/pvc'
+    if os.path.exists(path):
+        for id_path in os.listdir(path):
+            for file_name in os.listdir(os.path.join(path, id_path)):
+                file_stats = os.stat(os.path.join(path, id_path, file_name))
+
+                if file_stats.st_size <= 0:
+                    continue
+
+                with open(os.path.join(path, id_path, file_name)) as backup_file:
+                    states += [jsonpickle.decode(backup_file.read())]
+    
+    for state in states:
+        progress_done += (state.current_number - state.first_number)
+        progress_all += (state.last_number - state.first_number)
+
+        if state.solution is not None:
+            solution = state.solution
+    
+    return jsonify({
+        'progress_done': progress_done,
+        'progress_all': progress_all,
+        'solution': solution
+    }), 200

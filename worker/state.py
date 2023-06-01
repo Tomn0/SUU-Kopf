@@ -1,14 +1,15 @@
 class State: # TODO duplicating classes is evil
 
-    def __init__(self, N: int, first_number: int, last_number: int, current_number: int = None):
+    def __init__(self, N: int, first_number: int, last_number: int, current_number: int = None, solution: int = None):
         self.N = N
         self.first_number = first_number
         self.last_number = last_number
         self.current_number = current_number if current_number is not None else self.first_number
+        self.solution = None
 
     def __str__(self) -> str:
-        return f'N: {str(self.N)} range: [{str(self.first_number)} - {str(self.last_number)}] curr: {str(self.current_number)}'
-    
+        return f'N: {str(self.N)} range: [{str(self.first_number)} - {str(self.last_number)}] curr: {str(self.current_number)} sol: {str(self.solution)}'    
+
     def __repr__(self) -> str:
         return self.__str__()
     

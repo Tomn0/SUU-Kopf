@@ -26,12 +26,15 @@ app = Flask(__name__)
 def bg_task():
     global state
     
-    while True:
+    while state.current_number <= state.last_number:
         if state.current_number % state.N == 0:
-            # found factor
-            break
+            state.solution = state.current_number
+            save()
+            return
         
         state.current_number += 1
+    
+    save()
 
 scheduler = BackgroundScheduler(daemon=True)
 scheduler.add_job(bg_task)
@@ -59,7 +62,7 @@ def save():
 
     # save state to file
     with open(f'{path}/{salt}.dat', 'w') as file:
-        state_string = jsonpickle.encode(State(state))
+        state_string = jsonpickle.encode(state)
         file.write(f'{state_string}')
 
     return 'State saved correctly'
