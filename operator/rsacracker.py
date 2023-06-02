@@ -85,6 +85,34 @@ def rsac_on_delete(meta: kopf.Meta, **kwargs):
     for pod_name in names_to_be_deleted:
         api.delete_namespaced_pod(pod_name, meta.namespace)
 
+@kopf.on.update("rsac", retries=1)
+def pod_on_update(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
+    logging.info(f'Detected update event')
+
+    # TODO: for now we don't care about already calculated state - fix that
+    api = kubernetes.client.CoreV1Api()
+
+    # delete old workers
+    # delete the is_working file, which will cause the operator to stop caring about the workers
+    if os.path.exists(os.path.join(operator_directory, 'is_working')):
+        os.remove(os.path.join(operator_directory, 'is_working'))
+
+    # find pods to be deleted
+    pod_list = api.list_namespaced_pod(namespace=meta.namespace, watch=False)
+    names_to_be_deleted = []
+    for pod in pod_list.items:
+        if pod.metadata.labels.get('rsac-id', None) is not None: # finds everyone with the 'rsac-id' label 
+            names_to_be_deleted.append(pod.metadata.name)
+
+    # delete pods
+    logging.info(f'Deleting old workers: {names_to_be_deleted}')
+    api = kubernetes.client.CoreV1Api()
+    for pod_name in names_to_be_deleted:
+        api.delete_namespaced_pod(pod_name, meta.namespace)
+
+    # call the 
+    rsac_on_create(meta, spec, **kwargs)
+
 @kopf.on.create("pod", labels={ 'application': 'rsac-worker' }, retries=1)
 def pod_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     if not os.path.exists(os.path.join(operator_directory, 'is_working')):
