@@ -17,3 +17,6 @@ spec:
     image: suukopfproject/master
     ports:
       - containerPort: 8080
+    env:
+    - name: OPERATOR_IP
+      value: {operator_ip}
