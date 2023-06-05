@@ -7,24 +7,45 @@ import os
 import time
 import yaml
 import random
+import math
+import socket
 from flask import Flask, request, jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 
 
 operator_directory = '/usr/share/pvc/operator' # directory in PVC where the operator keeps its files
 
+def getOperatorIp():
+    return socket.gethostbyname(socket.gethostname())
+
 @kopf.on.create("rsac", retries=1)
 def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     worker_count = spec['workerCount']
+    N = spec['numberToFactor']
 
     api = kubernetes.client.CoreV1Api()
 
+    last_number_to_check = int(math.sqrt(N))
+    each_state_size = int(last_number_to_check / worker_count)
+    states = []
+
+    for i in range(worker_count):
+        first_number = i * each_state_size
+        last_number = (i+1) * each_state_size - 1
+
+        if first_number < 2:
+            first_number = 2
+
+        states += [State(N, first_number, last_number)]
+    
+    states[-1].last_number = last_number_to_check
+
     # create workers
-    worker_ids = [ f'id{i}' for i in range(worker_count) ]
-    for id in worker_ids:
-        starting_state = create_initial_state() # in the future this should be a chunk of work for the worker
-        worker_manifest = create_worker_yaml(id, starting_state)
+    for i,starting_state in enumerate(states):
+        worker_id = f'id{i}'
+        worker_manifest = create_worker_yaml(worker_id, starting_state)
         api.create_namespaced_pod(meta.namespace, worker_manifest)
 
     # this file tells the operator that it is working, deleting it will make the operator ignore the workers
@@ -35,7 +56,9 @@ def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
         pass
     
     # create master
-    master_manifest = create_yaml('master')
+    master_manifest = create_yaml('master', {
+        'operator_ip': getOperatorIp(),
+    })
     api.create_namespaced_pod(meta.namespace, master_manifest)
 
     # create user-master service
@@ -127,7 +150,7 @@ def create_worker_yaml(id: str | int, state: State = None, salt: int = None):
 def create_yaml(yamlFilename: str, params: dict = {}):
     path = os.path.join(os.path.dirname(__file__), yamlFilename + '.yaml')
     tmpl = open(path, 'rt').read()
-    text = tmpl.format(params)
+    text = tmpl.format(**params)
     return yaml.safe_load(text)
 
 
@@ -169,17 +192,44 @@ def get_best_backup_state_for_id(id) -> State:
 
 app = Flask(__name__)
 
-@kopf.daemon('flask_daemon')
-def run_flask(stopped, **kwargs):
+def run_flask():
     logging.debug("Running flask...")
-    app.run(debug=True, host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080)
 
-@app.route('/start-task', methods=['POST'])
-def start_task():
-    n = int(request.form.get('n'))
-    logging.debug(f"Received start-task request with number {n}")
+scheduler = BackgroundScheduler(daemon=True)
+scheduler.add_job(run_flask)
+scheduler.start()
 
-    # TODO: start actual task (deploy workers etc.)
-    task_id = str(time.time())
+@app.route('/progress', methods=['GET'])
+def progress():
+    logging.debug(f"Received progress request")
     
-    return jsonify({'task_id': task_id}), 202
+    states = []
+    progress_done = 0
+    progress_all = 0
+    solution = None
+
+    path = f'/usr/share/pvc'
+    if os.path.exists(path):
+        for id_path in os.listdir(path):
+            for file_name in os.listdir(os.path.join(path, id_path)):
+                file_stats = os.stat(os.path.join(path, id_path, file_name))
+
+                if file_stats.st_size <= 0:
+                    continue
+
+                with open(os.path.join(path, id_path, file_name)) as backup_file:
+                    states += [jsonpickle.decode(backup_file.read())]
+    
+    for state in states:
+        progress_done += (state.current_number - state.first_number)
+        progress_all += (state.last_number - state.first_number)
+
+        if state.solution is not None:
+            solution = state.solution
+    
+    return jsonify({
+        'progress_done': progress_done,
+        'progress_all': progress_all,
+        'solution': solution
+    }), 200

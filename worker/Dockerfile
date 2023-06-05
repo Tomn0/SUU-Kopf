@@ -11,4 +11,4 @@ ENV FLASK_APP=worker.py
 
 EXPOSE 80
 
-CMD ["flask", "--app", "worker.py", "run", "--host=0.0.0.0", "--port=80"]
+CMD ["flask", "--app", "worker.py", "run", "--host=0.0.0.0", "--port=80", "--debug"]
