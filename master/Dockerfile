@@ -1,6 +1,7 @@
 FROM python:3.11
-ADD . /src
+ADD . .
 
-# pip installs can be done here
+RUN pip install flask
+RUN pip install requests
 
-CMD python /src/master.py --verbose
+CMD python ./master.py --verbose

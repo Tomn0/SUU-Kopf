@@ -1,0 +1,22 @@
+# Deploys the master's Docker image
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: master
+  labels:
+    mylabel: master
+    application: master
+spec:
+  selector:
+    matchLabels:
+      application: master
+  containers:
+  - name: temp-master1
+    # imagePullPolicy: Never # Uncomment this line when developing locally
+    image: suukopfproject/master
+    ports:
+      - containerPort: 8080
+    env:
+    - name: OPERATOR_IP
+      value: {operator_ip}

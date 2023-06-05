@@ -4,3 +4,6 @@ apiVersion: suu-kopf.dev/v1
 kind: RSACraker
 metadata:
   name: my-rsac
+spec:
+  workerCount: 3
+  numberToFactor: 121

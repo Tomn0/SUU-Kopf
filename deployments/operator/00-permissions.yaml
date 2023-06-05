@@ -41,7 +41,7 @@ rules:
       - '*'
     resources:
       - '*'
-    verbs: [list, watch, patch]
+    verbs: [create, delete, deletecollection, get, list, patch, update, watch]
 
   # Application: read-only access for watching cluster-wide.
   - apiGroups: [kopf.dev]
