@@ -4,8 +4,13 @@ from state import State, create_initial_state, is_gte
 import kubernetes
 import jsonpickle
 import os
+import time
 import yaml
 import random
+from flask import Flask, request, jsonify
+
+
+
 
 operator_directory = '/usr/share/pvc/operator' # directory in PVC where the operator keeps its files
 
@@ -13,9 +18,10 @@ operator_directory = '/usr/share/pvc/operator' # directory in PVC where the oper
 def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     worker_count = spec['workerCount']
 
+    api = kubernetes.client.CoreV1Api()
+
     # create workers
     worker_ids = [ f'id{i}' for i in range(worker_count) ]
-    api = kubernetes.client.CoreV1Api()
     for id in worker_ids:
         starting_state = create_initial_state() # in the future this should be a chunk of work for the worker
         worker_manifest = create_worker_yaml(id, starting_state)
@@ -27,15 +33,30 @@ def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     with open(os.path.join(operator_directory, 'is_working'), 'w'):
         # the contents are empty, it's just the exsitance of this file that's important to the operator
         pass
+    
+    # create master
+    master_manifest = create_yaml('master')
+    api.create_namespaced_pod(meta.namespace, master_manifest)
+
+    # create user-master service
+    user_master_service_manifest = create_yaml('user-master-service')
+    api.create_namespaced_service(meta.namespace, user_master_service_manifest)
 
 @kopf.on.delete("rsac", retries=1)
 def rsac_on_delete(meta: kopf.Meta, **kwargs):
+    api = kubernetes.client.CoreV1Api()
+    
+    # delete service
+    api.delete_namespaced_service('user-master-service', meta.namespace)
+
+    # delete master
+    api.delete_namespaced_pod('master', meta.namespace)
+
     # delete the is_working file, which will cause the operator to stop caring about the workers
     if os.path.exists(os.path.join(operator_directory, 'is_working')):
         os.remove(os.path.join(operator_directory, 'is_working'))
 
     # find pods to be deleted
-    api = kubernetes.client.CoreV1Api()
     pod_list = api.list_namespaced_pod(namespace=meta.namespace, watch=False)
     names_to_be_deleted = []
     for pod in pod_list.items:
@@ -103,6 +124,12 @@ def create_worker_yaml(id: str | int, state: State = None, salt: int = None):
         )
         return yaml.safe_load(formatted_yaml)
 
+def create_yaml(yamlFilename: str, params: dict = {}):
+    path = os.path.join(os.path.dirname(__file__), yamlFilename + '.yaml')
+    tmpl = open(path, 'rt').read()
+    text = tmpl.format(params)
+    return yaml.safe_load(text)
+
 
 def get_starter_state_from_spec(spec: kopf.Spec) -> State:
     env = spec['containers'][0]['env']
@@ -135,3 +162,24 @@ def get_best_backup_state_for_id(id) -> State:
         return longest_running_state
     else:
         return create_initial_state()
+
+
+
+# api for starting task, used by master
+
+app = Flask(__name__)
+
+@kopf.daemon('flask_daemon')
+def run_flask(stopped, **kwargs):
+    logging.debug("Running flask...")
+    app.run(debug=True, host="0.0.0.0", port=8080)
+
+@app.route('/start-task', methods=['POST'])
+def start_task():
+    n = int(request.form.get('n'))
+    logging.debug(f"Received start-task request with number {n}")
+
+    # TODO: start actual task (deploy workers etc.)
+    task_id = str(time.time())
+    
+    return jsonify({'task_id': task_id}), 202
