@@ -25,7 +25,7 @@ spec:
           claimName: rsac-persistent-volume-claim
       containers:
       - name: rsac-operator
-        imagePullPolicy: Never # Uncomment this line when developing locally
+        # imagePullPolicy: Never # Uncomment this line when developing locally
         image: suukopfproject/rsacracker
         volumeMounts:
           - name: main-storage
