@@ -82,8 +82,6 @@ Deleting the deployment:
 
 ## Running in Azure
 
-**NOTE won't work yet as the scripts are not ready (TODO)**
-
 Prerequisites: AZ CLI, An Azure subscription with sufficient funds 
 
 *Disable minikube before attemting to prevent issues with conflicting `kubectl` configs*
@@ -92,7 +90,9 @@ Deploying the infrastructure:
 
 1. In your terminal authenticate to your Azure account: `az login`
 2. In case you use multiple Azure subscription set the desired one with: `az account set --subscription YOUR_SUBSCRIPTION`
-2. Deploy the infrastructure with `./infrastructure/scripts/deploy`
+3. Deploy the infrastructure with:
+    - Bash: `./infrastructure/scripts/bash/deploy.sh`
+    - Powershell: `./infrastructure/scripts/powershell/deploy.ps1`
 
 Deploying the example deployment:
 
@@ -100,14 +100,18 @@ Deploying the example deployment:
 2. Apply the custom resource definition: `kubectl apply -f .\deployments\crd\`
 3. Apply the example deployment: `kubectl apply -f .\deployments\example`
 
-Now you can use `kubectl` or `minikube dashboard` to monitor the deployment.
+Now you can use `kubectl` or the Azure Portal to monitor the deployment.
 
 Deleting the deployment:
 
 1. Delete the resources: `kubectl delete -f .\deployments\example`
 2. Delete the custom resource definition: `kubectl delete -f .\deployments\crd`
 3. Delete the operator: `kubectl delete -f .\deployments\operator\`
-4. Delete minikube: `minikube delete`
 
 Deleting the infrastructure:
-1. Run `./infrastructure/scripts/teardown`
+1. Run:
+    - Bash: `./infrastructure/scripts/bash/teardown.sh`
+    - Powershell: `./infrastructure/scripts/powershell/teardown.ps1`
+2. **Please note:** Unless explicitly disabled, Azure creates a Network Watcher resource when deploying a Kubernetes Cluster. This will add additional costs, and is not removed by the script above. If you want to delete the Network Watcher (recommended unless you're using it for other projects) use:
+    - Bash: `./infrastructure/scripts/bash/teardown-nw.sh`
+    - Powershell: `./infrastructure/scripts/powershell/teardown-nw.ps1`
