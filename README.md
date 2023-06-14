@@ -111,3 +111,11 @@ Deleting the deployment:
 
 Deleting the infrastructure:
 1. Run `./infrastructure/scripts/teardown`
+
+
+In order to set up the calculations modify the `workerCount` and `numberToFactor` parameters in the `01-rsac.yaml` file.
+
+To change the number of workers dynamically:
+1. Run: `kubectl edit RSACracker my-rsac`
+2. Write the desired number of workers
+3. Save and close the file
