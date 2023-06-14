@@ -8,6 +8,7 @@ import time
 import yaml
 import random
 import math
+import socket
 from flask import Flask, request, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -15,6 +16,9 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 
 operator_directory = '/usr/share/pvc/operator' # directory in PVC where the operator keeps its files
+
+def getOperatorIp():
+    return socket.gethostbyname(socket.gethostname())
 
 @kopf.on.create("rsac", retries=1)
 def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
@@ -52,7 +56,9 @@ def rsac_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
         pass
     
     # create master
-    master_manifest = create_yaml('master')
+    master_manifest = create_yaml('master', {
+        'operator_ip': getOperatorIp(),
+    })
     api.create_namespaced_pod(meta.namespace, master_manifest)
 
     # create user-master service
@@ -110,7 +116,6 @@ def pod_on_update(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     for pod_name in names_to_be_deleted:
         api.delete_namespaced_pod(pod_name, meta.namespace)
 
-    # call the 
     rsac_on_create(meta, spec, **kwargs)
 
 @kopf.on.create("pod", labels={ 'application': 'rsac-worker' }, retries=1)
@@ -172,7 +177,7 @@ def create_worker_yaml(id: str | int, state: State = None, salt: int = None):
 def create_yaml(yamlFilename: str, params: dict = {}):
     path = os.path.join(os.path.dirname(__file__), yamlFilename + '.yaml')
     tmpl = open(path, 'rt').read()
-    text = tmpl.format(params)
+    text = tmpl.format(**params)
     return yaml.safe_load(text)
 
 

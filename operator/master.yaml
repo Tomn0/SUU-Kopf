@@ -12,8 +12,11 @@ spec:
     matchLabels:
       application: master
   containers:
-  - name: temp-worker1
+  - name: temp-master1
     imagePullPolicy: Never # Uncomment this line when developing locally
     image: suukopfproject/master
     ports:
       - containerPort: 8080
+    env:
+    - name: OPERATOR_IP
+      value: {operator_ip}
