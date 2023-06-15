@@ -13,7 +13,7 @@ spec:
       application: master
   containers:
   - name: temp-master1
-    # imagePullPolicy: Never # Uncomment this line when developing locally
+    imagePullPolicy: Never # Uncomment this line when developing locally
     image: suukopfproject/master
     ports:
       - containerPort: 8080
