@@ -1,4 +1,4 @@
-class State: # TODO duplicating classes is evil
+class State:
 
     def __init__(self, N: int, first_number: int, last_number: int, current_number: int = None):
         self.N = N

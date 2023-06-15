@@ -63,7 +63,6 @@ After doing changes to python files:
 
 Use `kubectl` or the dashboard `minikube dashboard` to monitor the resources and get access to logs.
 
-*TODO (maybe we should automate steps 2-6 ?)*
 
 When we're ready to release new versions we can publish the images with these steps:
 1. Log in to the account asssociated with this project (credentials are not publicly distributed): `docker login`
@@ -81,8 +80,6 @@ Deleting the deployment:
 4. Delete minikube: `minikube delete`
 
 ## Running in Azure
-
-**NOTE won't work yet as the scripts are not ready (TODO)**
 
 Prerequisites: AZ CLI, An Azure subscription with sufficient funds 
 
@@ -111,3 +108,11 @@ Deleting the deployment:
 
 Deleting the infrastructure:
 1. Run `./infrastructure/scripts/teardown`
+
+
+In order to set up the calculations modify the `workerCount` and `numberToFactor` parameters in the `01-rsac.yaml` file.
+
+To change the number of workers dynamically:
+1. Run: `kubectl edit RSACracker my-rsac`
+2. Write the desired number of workers
+3. Save and close the file

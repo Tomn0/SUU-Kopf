@@ -73,7 +73,6 @@ def bg_task():
             # logging.info(f"Found solution {state.solution}")
             save(solution=True)
             return
-        # time.sleep(10)
         state.current_number += 1
 
     
