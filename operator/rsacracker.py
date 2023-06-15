@@ -95,7 +95,6 @@ def rsac_on_delete(meta: kopf.Meta, **kwargs):
 def pod_on_update(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     logging.info(f'Detected update event')
 
-    # TODO: for now we don't care about already calculated state - fix that
     api = kubernetes.client.CoreV1Api()
 
     # delete old workers
