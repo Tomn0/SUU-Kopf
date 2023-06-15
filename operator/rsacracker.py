@@ -116,7 +116,43 @@ def pod_on_update(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
     for pod_name in names_to_be_deleted:
         api.delete_namespaced_pod(pod_name, meta.namespace)
 
-    rsac_on_create(meta, spec, **kwargs)
+
+    worker_count = spec['workerCount']
+    N = spec['numberToFactor']
+
+
+    last_number_to_check = int(math.sqrt(N))
+    each_state_size = int(last_number_to_check / worker_count)
+    states = []
+
+    for i in range(worker_count):
+        first_number = i * each_state_size
+        last_number = (i+1) * each_state_size - 1
+
+        if first_number < 2:
+            first_number = 2
+
+        states += [State(N, first_number, last_number)]
+    
+    states[-1].last_number = last_number_to_check
+
+    # create workers
+    for i,starting_state in enumerate(states):
+        worker_id = f'id{i}'
+        worker_manifest = create_worker_yaml(worker_id, starting_state)
+        api.create_namespaced_pod(meta.namespace, worker_manifest)
+
+    # this file tells the operator that it is working, deleting it will make the operator ignore the workers
+    if not os.path.exists(operator_directory):
+        os.mkdir(operator_directory)
+    with open(os.path.join(operator_directory, 'is_working'), 'w'):
+        # the contents are empty, it's just the exsitance of this file that's important to the operator
+        pass
+
+
+#########################################
+#########################################
+#########################################
 
 @kopf.on.create("pod", labels={ 'application': 'rsac-worker' }, retries=1)
 def pod_on_create(meta: kopf.Meta, spec: kopf.Spec, **kwargs):
