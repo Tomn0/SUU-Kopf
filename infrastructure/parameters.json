@@ -1,11 +1,27 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-
-      "dummyParameter": {
-        "value": "TODO, this file holds the parameters for the bicep file"
-      }
-
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterName": {
+      "value": "suu-aks"
+    },
+    "dnsPrefix": {
+      "value": "suu-aks-dns"
+    },
+    "osDiskSizeGB": {
+      "value": 0
+    },
+    "agentCount": {
+      "value": 2
+    },
+    "agentVMSize": {
+      "value": "Standard_B2s"
+    },
+    "linuxAdminUsername": {
+      "value": "suu"
+    },
+    "sshRSAPublicKey": {
+      "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC3xRy4aYIHENzgQhKfaBbUU8UD8KOLdHt1s+oPOEKER+cd1RggqbqrCkEhzD4mm2wjuBp67PEFPIzJ1Rk6ZjvYBMGoiONfhvVnL86QSx9NzU42gMuyyar4/7A+Pigq+HMf/bbozxEmspsdRldmTxH4cQUpaXVNl4pw8nDc5OBs1VkWVIODgujJyqb/Yt7+GL2DnWByaiBmX8JKYiX0Ce/jyuwDqkY+UQk7zpco+UQKtpLVNn6cmorxaJnm/G5KFBG7zKYA7Pv+3iMcAucx34jlSeFrl/0iIvuJOK/AYUQpLPjGS9Evw1zZzmvGfMS45Syq/4NXnfGMF/E0E21P1J4ROo1VuzqWFgFwIAc42312pvOt/gKOVStbEA2bIbxNiPrPi4bmK+rZkvvOfOU9nVGnMFpqa1hvEqyvtKKMVZReCb1sv8I8yvXPMO76KnKc1B15tdHZJfL5k2rfVacXqP3Hxrx9uuu1LisZntmX0W6sfrjkakGkEToZEnJvucb8W/C8TN+2gaj71Dyz6YgP6Pju/mFbDq/7/TIMxuft0O5l741cwy3m15rbtKcw8qpt/D4+faff2/5109KATn/lOMzqvDBFFA8dFUwNMHfb+QLkN+futsb+T6kauQV4tD8mDT/seNJ9Kq39NaDLKBFVLcEnAYAZ/Hdm7/c3pFpZ1Mok2Q== wojte@LAPTOP-U2LL3VM3"
     }
   }
+}
